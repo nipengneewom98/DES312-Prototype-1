@@ -3,11 +3,14 @@ public class PlayerMovement : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
-        private float JumpForce = 2.0f;
+        private float jumpForce = 5.0f;
+        public LayerMask groundLayer;
+        public Transform groundCheck;
+        public float groundDistance = 0.4f;
+        private bool isGrounded;
         private Rigidbody rb;
         public float mouseSensitivity = 200.0f;
         public Transform playerBody;
-
         float xRotation = 0.0f;
     void Start()
     {
@@ -20,9 +23,13 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
 
-        if (Input.GetKey(KeyCode.Space))
+
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundLayer);
+
+        if (isGrounded && Input.GetButtonDown("Jump"))
         {
-            rb.AddForce(Vector3.up * JumpForce, ForceMode.Impulse);
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z); // reset Y velocity
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
 
         if (Input.GetKey(KeyCode.W))
