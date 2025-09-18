@@ -3,7 +3,7 @@ public class PlayerMovement : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
-        private float JumpForce = 5.0f;
+        private float JumpForce = 2.0f;
         private Rigidbody rb;
         public float mouseSensitivity = 200.0f;
         public Transform playerBody;
