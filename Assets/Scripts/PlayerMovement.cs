@@ -3,64 +3,65 @@ public class PlayerMovement : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
-        private float jumpForce = 5.0f;
-        public LayerMask groundLayer;
-        public Transform groundCheck;
-        public float groundDistance = 0.4f;
-        private bool isGrounded;
-        private Rigidbody rb;
-        public float mouseSensitivity = 200.0f;
-        public Transform playerBody;
-        float xRotation = 0.0f;
+public float moveSpeed = 6f;
+
+    // GROUND CHECK
+    public float playerHeight = 2f;
+    public float groundDrag = 5f;
+    public LayerMask whatIsGround;
+    private bool grounded;
+
+    public Transform orientation;
+    private float horizontalInput;
+    private float verticalInput;
+
+    private Vector3 moveDirection;
+
+    private Rigidbody rb;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        Cursor.lockState = CursorLockMode.Locked;
-
+        rb.freezeRotation = true;
+       
     }
 
     // Update is called once per frame
     void Update()
     {
+        GetInput();
 
+        // Ground check
+        grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
 
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundLayer);
-
-        if (isGrounded && Input.GetButtonDown("Jump"))
+        if (grounded)
         {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z); // reset Y velocity
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            rb.linearDamping = groundDrag;   // ✅ correct property
         }
-
-        if (Input.GetKey(KeyCode.W))
+        else
         {
-            transform.Translate(Vector3.forward * Time.deltaTime * 2);
+            rb.linearDamping = 0;
         }
+    }
 
-        if (Input.GetKey(KeyCode.S))
+    void FixedUpdate()
+    {
+        MovePlayer();
+    }
+
+    private void GetInput()
+    {
+        horizontalInput = Input.GetAxisRaw("Horizontal");
+        verticalInput = Input.GetAxisRaw("Vertical");
+    }
+
+    private void MovePlayer()
+    {
+        moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+
+        if (moveDirection != Vector3.zero)  // ✅ only add force when input exists
         {
-            transform.Translate(Vector3.back * Time.deltaTime * 2);
+            rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
         }
-
-        if (Input.GetKey(KeyCode.A))
-        {
-            transform.Translate(Vector3.left * Time.deltaTime * 2);
-        }
-
-        if (Input.GetKey(KeyCode.D))
-        {
-            transform.Translate(Vector3.right * Time.deltaTime * 2);
-        }
-
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
-
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
-
-        playerBody.Rotate(Vector3.up * mouseX);
-
-        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-        
     }
 }
